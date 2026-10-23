@@ -37,6 +37,7 @@ Singleton {
     property string _launcherCachedQuery: ""
     property var _launcherCachedEntries: []
     property int _launcherSearchSeq: 0
+    property string _appliedFilterKey: ""
 
     signal historyCopied
     signal historyCleared
@@ -123,6 +124,13 @@ Singleton {
         pinned.sort(byIdDesc);
         unpinned.sort(byIdDesc);
 
+        // A new query replaces most rows, and ScriptModel's diff is O(old*new) for that: ~9s at 10k entries. From an empty list it is O(n).
+        const filterKey = activeFilter + "\n" + query;
+        if (filterKey !== _appliedFilterKey) {
+            _appliedFilterKey = filterKey;
+            pinnedEntries = [];
+            unpinnedEntries = [];
+        }
         pinnedEntries = pinned;
         unpinnedEntries = unpinned;
         clipboardEntries = pinned.concat(unpinned);
